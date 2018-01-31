@@ -33,7 +33,6 @@ def get_output_config():
         'output.kafka' : {
             'enabled': True,
             'hosts': [kafkaAdress],
-            #'hosts': ['54.76.190.172:9092'],
             'topic': 'monicatopic',
             'codec': ['json']
         }
@@ -63,7 +62,7 @@ def monitoring_config(service):
         'period': period,
         'hosts': [service['primary_ip'] + ':' + (service['labels']['com.metricbeat.port'] if 'com.metricbeat.port' in service['labels'] else '8080')],
         'metrics_path': service['labels']['com.metricbeat.metricspath'] if 'com.metricbeat.metricspath' in service['labels'] else '/metrics',
-        'namespace': 'monica'
+        'namespace': project
     }
 
 
@@ -71,17 +70,12 @@ def get_monitoring_config():
     return list(map(monitoring_config, filter(is_monitored_service, get_current_metadata_entry('containers'))))
 
 def write_config_file(filename, get_config_function):
-    #hostdict = get_hosts_dict(get_current_metadata_entry('hosts'))
     configlist = get_config_function()
     with open(filename, 'w') as config_file:
         print(yaml.dump(get_general_config(), default_flow_style = False),file=config_file)
-        print("metricbeat.modules:\n" + yaml.dump(configlist, default_flow_style = False),file=config_file)
+        if configlist:
+            print("metricbeat.modules:\n" + yaml.dump(configlist, default_flow_style = False),file=config_file)
         print(yaml.dump(get_output_config(), default_flow_style = False),file=config_file)
-    #newconfiglist = [ enrich_dict(x,hostdict) for x in configlist ]
-    #tmpfile = filename+'.temp'
-    #with open(tmpfile, 'w') as config_file:
-    #    print(json.dumps(newconfiglist, indent=2),file=config_file)
-    #    shutil.move(tmpfile,filename)
 
 if __name__ == '__main__':
         while True:
