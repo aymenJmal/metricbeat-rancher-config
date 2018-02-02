@@ -8,11 +8,12 @@ import yaml
 import os
 
 kafkaAdress = os.environ.get('KAFKA_HOSTNAME_PORT')
+kibanaAdress = os.environ.get('KIBANA_HOSTNAME_PORT')
 project = os.environ.get('PROJECT_NAME')
 type = os.environ.get('PROJECT_TYPE')
 retention = os.environ.get('PROJECT_RETENTION')
 period = os.environ.get('MONITORING_FREQUENCY')
-
+ndx = "monica-dev-" + project + "-" + type + "-*"
 def get_general_config():
     return {
         'metricbeat.config.modules' : {
@@ -25,6 +26,17 @@ def get_general_config():
             'project': project ,
             'type': type,
             'retention': retention
+        }
+    }
+
+def get_dashboards_config():
+    return {
+        'setup.dashboards.index': ndx,
+        'setup.dashboards.always_kibana': True,
+        'setup.kibana' : {
+            'host': kibanaAdress,
+            'username': 'elastic',
+            'password': 'changeme'
         }
     }
 
@@ -75,6 +87,7 @@ def write_config_file(filename, get_config_function):
         print(yaml.dump(get_general_config(), default_flow_style = False),file=config_file)
         if configlist:
             print("metricbeat.modules:\n" + yaml.dump(configlist, default_flow_style = False),file=config_file)
+        print(yaml.dump(get_dashboards_config(), default_flow_style = False),file=config_file)
         print(yaml.dump(get_output_config(), default_flow_style = False),file=config_file)
 
 if __name__ == '__main__':
