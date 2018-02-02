@@ -39,7 +39,7 @@ def get_dashboards_config():
         'setup.dashboards.index': ndx,
         'setup.dashboards.always_kibana': True,
         'setup.kibana' : {
-            'host': kibanaAdress,
+            'hosts': kibanaAdress,
             'username': 'elastic',
             'password': 'changeme'
         }
