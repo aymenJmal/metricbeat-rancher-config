@@ -12,8 +12,13 @@ kibanaAdress = os.environ.get('KIBANA_HOSTNAME_PORT')
 project = os.environ.get('PROJECT_NAME')
 type = os.environ.get('PROJECT_TYPE')
 retention = os.environ.get('PROJECT_RETENTION')
+topic = os.environ.get('TOPIC')
 period = os.environ.get('MONITORING_FREQUENCY')
-ndx = "monica-dev-" + project + "-" + type + "-*"
+try:
+    ndx = os.environ.get('PREFIX_NDX') + "-" + project + "-" + type + "-*"
+except:
+    print("project name and type not defined")
+
 def get_general_config():
     return {
         'metricbeat.config.modules' : {
@@ -28,7 +33,7 @@ def get_general_config():
             'retention': retention
         }
     }
-
+# you must put your username and password kibana
 def get_dashboards_config():
     return {
         'setup.dashboards.index': ndx,
@@ -45,7 +50,7 @@ def get_output_config():
         'output.kafka' : {
             'enabled': True,
             'hosts': [kafkaAdress],
-            'topic': 'monicatopic',
+            'topic': topic,
             'codec': ['json']
         }
     }
