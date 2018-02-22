@@ -14,6 +14,10 @@ RUN chmod 755 /metricbeat-rancher.py && \
 
 USER metricbeat
 
+RUN mkdir /metricbeat-rancher-data/modules.d
+
+ADD modules.d /metricbeat-rancher-data/modules.d
+
 VOLUME /metricbeat-rancher-data
 
 CMD ["/metricbeat-rancher.py"]

@@ -17,7 +17,8 @@ period = os.environ.get('MONITORING_FREQUENCY')
 def get_general_config():
     return {
         'metricbeat.config.modules' : {
-            'path': '${path.config}/modules.d/*.yml',
+            #'path': '${path.config}/modules.d/*.yml',
+            'path': '/metricbeat-rancher-data/modules.d/*.yml',
             'reload.enabled': True,
             'reload.period': '120s'
         },
@@ -59,7 +60,6 @@ def monitoring_config(service):
     return {
         'module': 'prometheus',
         'metricsets' :  ['collector'],
-        'enabled': True,
         'period': period,
         'hosts': [service['primary_ip'] + ':' + (service['labels']['com.metricbeat.port'] if 'com.metricbeat.port' in service['labels'] else '8080')],
         'metrics_path': service['labels']['com.metricbeat.metricspath'] if 'com.metricbeat.metricspath' in service['labels'] else '/metrics',
@@ -73,12 +73,18 @@ def get_monitoring_config():
 def write_config_file(filename, get_config_function):
     configlist = get_config_function()
     with open(filename, 'w') as config_file:
-        print(yaml.dump(get_general_config(), default_flow_style = False),file=config_file)
         if configlist:
-            print("metricbeat.modules:\n" + yaml.dump(configlist, default_flow_style = False),file=config_file)
+            print(yaml.dump(configlist, default_flow_style = False),file=config_file)
+
+def write_global_config_file(filename):
+    with open(filename, 'w') as config_file:
+        print(yaml.dump(get_general_config(), default_flow_style = False),file=config_file)
         print(yaml.dump(get_output_config(), default_flow_style = False),file=config_file)
 
+
+
 if __name__ == '__main__':
-        while True:
-            time.sleep(5)
-            write_config_file('/metricbeat-rancher-data/metricbeat.yml', get_monitoring_config)
+    while True:
+        time.sleep(5)
+        write_global_config_file('/metricbeat-rancher-data/metricbeat.yml')
+        write_config_file('/metricbeat-rancher-data/modules.d/prometheus-monica.yml', get_monitoring_config)
